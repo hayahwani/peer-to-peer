@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <title>Peer to Peer — Phone</title>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.min.js"></script>
+<script src="/sketch.js" defer></script>
+
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    
+main {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  display: block;
+}
+
+    h1 {
+      font-size: 30px;
+    }
+
+    #status {
+      font-size: 16px;
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+  <p id="status">Connecting...</p>
+</main>
+
+  <script>
+    const socket = io();
+    const status = document.getElementById('status');
+
+    socket.on('connect', () => {
+      status.textContent = 'Connected to server!';
+    });
+
+    socket.on('disconnect', () => {
+      status.textContent = 'Disconnected';
+    });
+  </script>
+</body>
+</html>

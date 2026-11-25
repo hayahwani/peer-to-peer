@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peer to Peer — Laptop Display</title>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      display: none;
+      transform: scaleX(-1);
+    }
+
+    #status {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      text-align: center;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="status">Waiting for a connection...</div>
+  <video id="screen" autoplay muted playsinline></video>
+
+  <script>
+    const socket = io();
+    const screen = document.getElementById('screen');
+    const status = document.getElementById('status');
+
+    let currentURL = null;
+
+    socket.on('connect', () => {
+      status.textContent = 'Connected — waiting for a viewer';
+      console.log('Laptop connected!');
+    });
+
+    socket.on('disconnect', () => {
+      status.style.display = 'block';
+      status.textContent = 'Disconnected from server';
+      screen.style.display = 'none';
+    });
+
+    socket.on('play-clip', (videoData) => {
+      console.log('Video received!');
+
+      const blob = new Blob([videoData.data], {
+        type: videoData.mimeType
+      });
+
+      screen.pause();
+
+      if (currentURL) {
+        URL.revokeObjectURL(currentURL);
+      }
+
+      currentURL = URL.createObjectURL(blob);
+      screen.src = currentURL;
+      screen.style.display = 'block';
+      status.style.display = 'none';
+
+      screen.play().catch((error) => {
+        console.error('Playback failed:', error);
+        status.style.display = 'block';
+        status.textContent = 'Video playback failed';
+      });
+
+      screen.onended = () => {
+        screen.style.display = 'none';
+        status.style.display = 'block';
+        status.textContent = 'Connected — waiting for a viewer';
+        screen.removeAttribute('src');
+        screen.load();
+
+        URL.revokeObjectURL(currentURL);
+        currentURL = null;
+      };
+    });
+  </script>
+</body>
+</html>
